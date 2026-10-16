@@ -1,0 +1,1230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Odin Playground</title>
+    <meta
+      name="description"
+      content="A browser playground for the Odin programming language, powered by LiveCodes. Odin is compiled to WebAssembly (wodin) and runs entirely client-side."
+    />
+    <meta name="theme-color" content="#3882d2" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 260'><rect width='260' height='260' rx='22' fill='%23138eeb'/><path transform='matrix(0.23131,0,0,0.231311,-26.4611,-156.862)' d='M430.516,1595.76C413.94,1584.38 400.839,1573.36 400.839,1573.36L827.125,835.012C827.125,835.012 844.672,841.52 859.166,848.469C877.436,857.226 892.569,865.763 892.569,865.763C1099.2,985.063 1170.11,1249.68 1050.81,1456.31C931.507,1662.95 666.89,1733.85 460.256,1614.55C460.256,1614.55 445.783,1606.23 430.516,1595.76ZM856.543,928.162L496.282,1552.15C668.477,1651.57 888.991,1592.48 988.408,1420.29C1087.82,1248.09 1028.74,1027.58 856.543,928.162ZM321.659,1487.36C307.172,1466.38 302.015,1456.32 302.015,1456.32C227.54,1326.96 222.078,1162.46 302.018,1024C381.958,885.54 527.146,808.023 676.415,807.839C676.415,807.839 696.568,807.787 713.348,809.394C738.628,811.816 755.435,815.078 755.435,815.078L347.771,1521.17C347.771,1521.17 338.1,1511.16 321.659,1487.36ZM633.291,882.532C524.653,895.735 423.297,958.044 364.417,1060.03C305.537,1162.01 302.255,1280.94 345.139,1381.63L633.291,882.532Z' fill='%23fff'/></svg>"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        /* Palette borrowed from odin-lang.org (Bootstrap primary/secondary + Odin dark tokens) */
+        --bg: #ffffff;
+        --surface: #f8f9fa;
+        --surface-2: #ffffff;
+        --surface-3: #e9ecef;
+        --border: #dee2e6;
+        --border-strong: #ced4da;
+        --text: #212529;
+        --muted: #6c757d;
+        --primary: #3882d2;
+        --primary-hover: #5695d9;
+        --secondary: #ef7a30;
+        --secondary-hover: #f18e4f;
+        --on-accent: #000000;
+        --ok: #198754;
+        --danger: #dc3545;
+        --tag-bg: rgba(56, 130, 210, 0.1);
+        --tag-border: rgba(56, 130, 210, 0.35);
+        --radius: 4px;
+        --font-sans:
+          system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+          "Noto Sans", "Liberation Sans", sans-serif;
+        --font-mono:
+          SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+          "Courier New", monospace;
+      }
+
+      body.dark-mode {
+        color-scheme: dark;
+        --bg: #0d1117;
+        --surface: #0d1117;
+        --surface-2: #182028;
+        --surface-3: #242f3f;
+        --border: #242f3f;
+        --border-strong: #30363d;
+        --text: #e0f0ff;
+        --muted: #8b98a9;
+        --primary: #7aade5;
+        --primary-hover: #9cc1e9;
+        --secondary: #ffaa44;
+        --secondary-hover: #ffbb66;
+        --on-accent: #0d1117;
+        --ok: #3fb950;
+        --danger: #f85149;
+        --tag-bg: rgba(122, 173, 229, 0.15);
+        --tag-border: rgba(122, 173, 229, 0.4);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        transition:
+          background-color 0.15s ease,
+          color 0.15s ease;
+      }
+
+      a {
+        color: var(--primary);
+      }
+
+      /* ---------- top bar ---------- */
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 18px;
+        min-height: 59px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .brand svg {
+        flex: none;
+        border-radius: 7px;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 1.0625rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+      }
+
+      .tag {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 2px 8px;
+        border-radius: 999px;
+        color: var(--primary);
+        background: var(--tag-bg);
+        border: 1px solid var(--tag-border);
+      }
+
+      .links {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 0.875rem;
+      }
+
+      .links a {
+        color: var(--muted);
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .links a:hover {
+        color: var(--primary);
+        text-decoration: underline;
+      }
+
+      .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        font: inherit;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: var(--radius);
+        cursor: pointer;
+        flex: none;
+      }
+
+      .icon-btn:hover {
+        background: var(--surface-3);
+        color: var(--text);
+      }
+
+      .icon-btn .icon-sun {
+        display: none;
+      }
+
+      body.dark-mode .icon-btn .icon-sun {
+        display: inline;
+      }
+
+      body.dark-mode .icon-btn .icon-moon {
+        display: none;
+      }
+
+      /* ---------- toolbar ---------- */
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 18px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .field {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: none;
+      }
+
+      .field > label {
+        font-size: 0.875rem;
+        color: var(--muted);
+      }
+
+      .select {
+        position: relative;
+      }
+
+      .select::after {
+        content: "";
+        position: absolute;
+        right: 13px;
+        top: 50%;
+        width: 7px;
+        height: 7px;
+        border-right: 2px solid var(--muted);
+        border-bottom: 2px solid var(--muted);
+        transform: translateY(-70%) rotate(45deg);
+        pointer-events: none;
+      }
+
+      select {
+        appearance: none;
+        font: inherit;
+        font-size: 0.875rem;
+        color: var(--text);
+        background: var(--surface-2);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+        min-width: 220px;
+        max-width: 100%;
+        line-height: 1.5;
+        cursor: pointer;
+      }
+
+      select:hover {
+        background: var(--surface-3);
+      }
+
+      select:focus-visible,
+      .btn:focus-visible,
+      .icon-btn:focus-visible,
+      .links a:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+
+      .hint {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 0.8125rem;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: none;
+      }
+
+      .btn {
+        font: inherit;
+        font-size: 0.875rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: var(--text);
+        background: var(--surface-2);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        padding: 0.375rem 0.75rem;
+        cursor: pointer;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition:
+          background-color 0.15s ease,
+          border-color 0.15s ease,
+          color 0.15s ease;
+      }
+
+      .btn:hover {
+        background: var(--surface-3);
+      }
+
+      .btn:disabled {
+        opacity: 0.65;
+        cursor: default;
+      }
+
+      .btn.primary {
+        color: var(--on-accent);
+        background: var(--primary);
+        border-color: var(--primary);
+        font-weight: 600;
+      }
+
+      .btn.primary:hover {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+      }
+
+      .btn.secondary {
+        color: var(--on-accent);
+        background: var(--secondary);
+        border-color: var(--secondary);
+        font-weight: 600;
+      }
+
+      .btn.secondary:hover {
+        background: var(--secondary-hover);
+        border-color: var(--secondary-hover);
+      }
+
+      .btn.ghost {
+        background: transparent;
+        border-color: transparent;
+        color: var(--muted);
+      }
+
+      .btn.ghost:hover {
+        background: var(--surface-3);
+        color: var(--text);
+      }
+
+      /* ---------- playground ---------- */
+
+      .stage {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        padding: 12px;
+        background: var(--bg);
+      }
+
+      #playground {
+        flex: 1 1 auto;
+        min-width: 0;
+        min-height: 0;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      /* ---------- status bar ---------- */
+
+      .statusbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 18px;
+        font-size: 0.75rem;
+        color: var(--muted);
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+      }
+
+      .statusbar .note {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #status {
+        margin-left: auto;
+        flex: none;
+        color: var(--ok);
+        opacity: 0;
+        transition: opacity 0.15s ease-in-out;
+      }
+
+      #status.visible {
+        opacity: 1;
+      }
+
+      #status[data-kind="error"] {
+        color: var(--danger);
+      }
+
+      @media (max-width: 1100px) {
+        .hint {
+          display: none;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .toolbar {
+          flex-wrap: wrap;
+        }
+
+        .field {
+          flex: 1 1 100%;
+        }
+
+        .field .select {
+          flex: 1 1 auto;
+        }
+
+        .select select {
+          min-width: 0;
+          width: 100%;
+        }
+
+        .actions {
+          margin-left: 0;
+          flex: 1 1 100%;
+          justify-content: flex-end;
+        }
+
+        .links {
+          display: none;
+        }
+
+        .icon-btn {
+          margin-left: auto;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .btn .label {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <svg
+          viewBox="0 0 260 260"
+          width="28"
+          height="28"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <g transform="matrix(0.074119,0,0,0.104825,0,0)">
+            <path
+              d="M3507.87,248.031C3507.87,111.139 3350.69,0 3157.09,0L350.787,0C157.183,0 0,111.139 0,248.031L0,2232.28C0,2369.18 157.183,2480.32 350.787,2480.32L3157.09,2480.32C3350.69,2480.32 3507.87,2369.18 3507.87,2232.28L3507.87,248.031Z"
+              fill="url(#odin-bg)"
+            />
+          </g>
+          <g transform="matrix(0.23131,0,0,0.231311,-26.4611,-156.862)">
+            <path
+              d="M430.516,1595.76C413.94,1584.38 400.839,1573.36 400.839,1573.36L827.125,835.012C827.125,835.012 844.672,841.52 859.166,848.469C877.436,857.226 892.569,865.763 892.569,865.763C1099.2,985.063 1170.11,1249.68 1050.81,1456.31C931.507,1662.95 666.89,1733.85 460.256,1614.55C460.256,1614.55 445.783,1606.23 430.516,1595.76ZM856.543,928.162L496.282,1552.15C668.477,1651.57 888.991,1592.48 988.408,1420.29C1087.82,1248.09 1028.74,1027.58 856.543,928.162ZM321.659,1487.36C307.172,1466.38 302.015,1456.32 302.015,1456.32C227.54,1326.96 222.078,1162.46 302.018,1024C381.958,885.54 527.146,808.023 676.415,807.839C676.415,807.839 696.568,807.787 713.348,809.394C738.628,811.816 755.435,815.078 755.435,815.078L347.771,1521.17C347.771,1521.17 338.1,1511.16 321.659,1487.36ZM633.291,882.532C524.653,895.735 423.297,958.044 364.417,1060.03C305.537,1162.01 302.255,1280.94 345.139,1381.63L633.291,882.532Z"
+              fill="#fff"
+            />
+          </g>
+          <defs>
+            <radialGradient
+              id="odin-bg"
+              cx="0"
+              cy="0"
+              r="1"
+              gradientUnits="userSpaceOnUse"
+              gradientTransform="matrix(3507.87,0,0,2480.31,0,0)"
+            >
+              <stop offset="0" stop-color="#189cff" />
+              <stop offset="0.58" stop-color="#138eeb" />
+              <stop offset="0.8" stop-color="#0971bf" />
+              <stop offset="1" stop-color="#005493" />
+            </radialGradient>
+          </defs>
+        </svg>
+        <h1>Odin Playground</h1>
+        <span class="tag">Wasm</span>
+      </div>
+      <nav class="links">
+        <a
+          href="https://odin-lang.org/docs/overview/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Language Overview ↗</a
+        >
+        <a
+          href="https://odin-lang.org/docs/examples/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Examples ↗</a
+        >
+      </nav>
+      <button
+        type="button"
+        class="icon-btn"
+        id="theme"
+        title="Toggle dark mode"
+        aria-label="Toggle dark mode"
+        aria-pressed="false"
+      >
+        <svg
+          class="icon-moon"
+          viewBox="0 0 24 24"
+          width="17"
+          height="17"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+        <svg
+          class="icon-sun"
+          viewBox="0 0 24 24"
+          width="17"
+          height="17"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="4" />
+          <path
+            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+          />
+        </svg>
+      </button>
+    </header>
+
+    <div class="toolbar">
+      <div class="field">
+        <label for="samples">Example</label>
+        <div class="select">
+          <select id="samples"></select>
+        </div>
+      </div>
+      <p class="hint" id="hint"></p>
+      <div class="actions">
+        <button
+          type="button"
+          class="btn primary"
+          id="run"
+          title="Compile and run (Ctrl/Cmd + Enter)"
+        >
+          ▶ <span class="label">Run</span>
+        </button>
+        <button
+          type="button"
+          class="btn"
+          id="reset"
+          title="Reset the current example"
+        >
+          Reset
+        </button>
+        <button
+          type="button"
+          class="btn secondary"
+          id="share"
+          title="Copy a link to this exact code"
+        >
+          Share
+        </button>
+        <button
+          type="button"
+          class="btn ghost"
+          id="open"
+          title="Open this code in the LiveCodes app"
+        >
+          Open in LiveCodes
+        </button>
+      </div>
+    </div>
+
+    <main class="stage">
+      <div id="playground" data-default-styles="false"></div>
+    </main>
+
+    <footer class="statusbar">
+      <span class="note"
+        >Odin runs fully in your browser. The first compile downloads the
+        WebAssembly toolchain, then it is cached.</span
+      >
+      <span id="status" role="status" aria-live="polite"></span>
+    </footer>
+
+    <script type="module">
+      import {
+        createPlayground,
+        compress,
+        decompress,
+        getPlaygroundUrl,
+      } from "https://cdn.jsdelivr.net/npm/livecodes";
+
+      const APP_URL = "https://dev.livecodes.io";
+      const LANGUAGE = "odin-wasm";
+      const THEME_KEY = "odin-playground-theme";
+
+      const SAMPLES = [
+        {
+          label: "Hellope!",
+          hint: "The smallest Odin program: a package, a proc and console output.",
+          code: `package main
+
+import "core:fmt"
+
+// Execution starts in the main procedure of the main package.
+main :: proc() {
+	fmt.println("Hellope!")
+
+	name := "Odin"
+	fmt.printfln("Hello, %s!", name)
+}
+`,
+        },
+        {
+          label: "Variables & assignment",
+          hint: "Type inference with :=, zero values, and multiple assignment.",
+          code: `package main
+
+import "core:fmt"
+
+main :: proc() {
+	// \`:=\` declares a variable and infers its type from the value.
+	x := 42                 // int
+	pi := 3.14159           // f64
+	flag := true            // bool
+	greeting: string = "hi" // or write the type explicitly
+
+	// Declared without a value, a variable gets its zero value.
+	count: int
+	fmt.println("zero value of count:", count)
+
+	// \`=\` assigns, and several values can be assigned at once.
+	a, b := 1, 2
+	a, b = b, a // swap
+	fmt.println("a =", a, "b =", b)
+
+	fmt.println("x =", x, "pi =", pi, "flag =", flag, "greeting =", greeting)
+
+	// Different types need an explicit conversion.
+	fmt.println("x as a float:", f64(x) + 0.5)
+}
+`,
+        },
+        {
+          label: "Constants & compile-time values",
+          hint: "Constants, typed constants, compound literals and #assert.",
+          code: `package main
+
+import "core:fmt"
+
+// Constants are evaluated at compile time and cannot change.
+PI :: 3.14159
+NAME :: "Odin"
+MAX_HEALTH : int : 100 // typed constant
+
+Vec2 :: struct { x, y: f32 }
+
+// Compound literals of structs and arrays can be constants too.
+ORIGIN :: Vec2{0, 0}
+PRIMES :: [5]int{2, 3, 5, 7, 11}
+
+// Compile-time assertions are checked while the program is built.
+#assert(MAX_HEALTH == 100)
+#assert(len(PRIMES) == 5)
+
+main :: proc() {
+	fmt.println("PI =", PI)
+	fmt.println("NAME =", NAME)
+	fmt.println("ORIGIN =", ORIGIN)
+	fmt.println("PRIMES =", PRIMES)
+	fmt.println("PRIMES[0] + PI =", f64(PRIMES[0]) + PI)
+}
+`,
+        },
+        {
+          label: "Control flow",
+          hint: "Odin's single for loop, if with an initialiser, and switch.",
+          code: `package main
+
+import "core:fmt"
+
+main :: proc() {
+	// Odin has a single loop statement: \`for\`.
+	for i in 0..<3 {
+		fmt.println("range:", i)
+	}
+
+	// A \`for\` with only a condition is a while loop.
+	n := 1
+	for n < 100 {
+		n *= 2
+	}
+	fmt.println("n grew to", n)
+
+	// \`if\` can declare variables that stay in scope for its branches.
+	if total := n + 10; total > 100 {
+		fmt.println("total", total, "is greater than 100")
+	} else {
+		fmt.println("total", total, "is not greater than 100")
+	}
+
+	// \`switch\` needs no \`break\`, and compared values need not be constants.
+	for i in 1..=15 {
+		switch {
+		case i % 15 == 0: fmt.println(i, "FizzBuzz")
+		case i % 3 == 0:  fmt.println(i, "Fizz")
+		case i % 5 == 0:  fmt.println(i, "Buzz")
+		case:             fmt.println(i)
+		}
+	}
+}
+`,
+        },
+        {
+          label: "Procedures & multiple results",
+          hint: "Named results, default parameters and variadic procedures.",
+          code: `package main
+
+import "core:fmt"
+
+// A procedure can return several values.
+swap :: proc(a, b: int) -> (int, int) {
+	return b, a
+}
+
+// Results may be named, and parameters may have default values.
+lerp :: proc(a, b: f64, t := 0.5) -> (result: f64) {
+	return a + (b - a) * t
+}
+
+// Variadic parameters collect the remaining arguments into a slice.
+sum :: proc(nums: ..int) -> (total: int) {
+	for n in nums {
+		total += n
+	}
+	return // a "naked" return of the named result
+}
+
+main :: proc() {
+	a, b := swap(1, 2)
+	fmt.println("swap(1, 2) =", a, b)
+
+	fmt.println("lerp(0, 10) =", lerp(0, 10))
+	fmt.println("lerp(0, 10, t = 0.25) =", lerp(0, 10, t = 0.25))
+
+	fmt.println("sum(1, 2, 3) =", sum(1, 2, 3))
+
+	// A slice can be spread into a variadic parameter.
+	nums := []int{4, 5, 6}
+	fmt.println("sum(..nums) =", sum(..nums))
+}
+`,
+        },
+        {
+          label: "Structs & pointer receivers",
+          hint: "Value semantics, struct literals and mutating through a pointer.",
+          code: `package main
+
+import "core:fmt"
+
+Vector2 :: struct {
+	x, y: f32,
+}
+
+// A procedure whose first parameter is the struct acts like a method.
+length_squared :: proc(v: Vector2) -> f32 {
+	return v.x * v.x + v.y * v.y
+}
+
+// Take a pointer to mutate the struct in place.
+scale :: proc(v: ^Vector2, factor: f32) {
+	v.x *= factor
+	v.y *= factor
+}
+
+main :: proc() {
+	v := Vector2{x = 3, y = 4}
+	fmt.println("v =", v)
+	fmt.println("length_squared(v) =", length_squared(v))
+
+	scale(&v, 2)
+	fmt.println("after scale(&v, 2):", v)
+
+	// Structs are values: assignment makes a copy.
+	u := v
+	u.x = 0
+	fmt.println("v is unchanged:", v)
+	fmt.println("u was changed: ", u)
+}
+`,
+        },
+        {
+          label: "Enums, unions & type switches",
+          hint: "Enum values and a tagged union inspected with a type switch.",
+          code: `package main
+
+import "core:fmt"
+
+Color :: enum {
+	Red,
+	Green,
+	Blue,
+}
+
+// A union holds exactly one of its variants at a time.
+Value :: union {
+	int,
+	f64,
+	string,
+	bool,
+}
+
+describe :: proc(v: Value) -> string {
+	switch _ in v {
+	case int:    return "an int"
+	case f64:    return "a float"
+	case string: return "a string"
+	case bool:   return "a bool"
+	case:        return "unknown"
+	}
+}
+
+main :: proc() {
+	c := Color.Green
+	fmt.println("c =", c, "-> underlying value", int(c))
+
+	values := []Value{Value(42), Value(3.14), Value("hellope"), Value(true)}
+	for v in values {
+		fmt.println(describe(v))
+	}
+
+	// A \`#partial switch\` may ignore some variants and binds the value.
+	v: Value = "hello"
+	#partial switch x in v {
+	case int:    fmt.println("int:", x)
+	case string: fmt.println("string:", x)
+	case:        fmt.println("something else")
+	}
+}
+`,
+        },
+        {
+          label: "Slices, dynamic arrays & maps",
+          hint: "Fixed arrays, slices, append-able dynamic arrays and hash maps.",
+          code: `package main
+
+import "core:fmt"
+
+main :: proc() {
+	// Fixed arrays carry their length in the type.
+	grid := [3][3]int{
+		{1, 2, 3},
+		{4, 5, 6},
+		{7, 8, 9},
+	}
+	fmt.println("grid[1][2] =", grid[1][2])
+
+	// Slices are a pointer plus a length over contiguous data.
+	xs := []int{5, 3, 8, 1, 9, 2}
+	fmt.println("xs =", xs)
+	fmt.println("xs[1:4] =", xs[1:4], "len(xs) =", len(xs))
+
+	// Dynamic arrays grow with append.
+	names := make([dynamic]string)
+	defer delete(names)
+	append(&names, "Odin")
+	append(&names, "Linux")
+	append(&names, "Vulkan")
+	fmt.println("names =", names)
+
+	// Maps are hash tables.
+	ages := make(map[string]int)
+	defer delete(ages)
+	ages["Ada"] = 36
+	ages["Alan"] = 41
+	fmt.println("ages =", ages)
+	fmt.println("Ada is", ages["Ada"])
+}
+`,
+        },
+        {
+          label: "defer",
+          hint: "Scoped defers, LIFO ordering, and conditional defers.",
+          code: `package main
+
+import "core:fmt"
+
+main :: proc() {
+	fmt.println("start")
+
+	// \`defer\` runs when the enclosing scope exits.
+	defer fmt.println("outer defer (runs last)")
+
+	{
+		// Defers run in reverse order of declaration.
+		defer fmt.println("inner defer (runs first)")
+		fmt.println("inside the block")
+	}
+
+	// \`defer if\` only runs when the condition holds.
+	debug := false
+	defer if debug {
+		fmt.println("debug information")
+	}
+
+	fmt.println("end")
+}
+`,
+        },
+        {
+          label: "Bit sets",
+          hint: "A compact set of enum flags with in, not_in and set operators.",
+          code: `package main
+
+import "core:fmt"
+
+Permission :: enum {
+	Read,
+	Write,
+	Execute,
+}
+
+// A bit_set is a small, efficient set of enum values.
+Permissions :: bit_set[Permission]
+
+main :: proc() {
+	admin: Permissions = {.Read, .Write, .Execute}
+	guest: Permissions = {.Read}
+
+	fmt.println("guest can read:  ", .Read in guest)
+	fmt.println("guest can write: ", .Write in guest)
+
+	// Sets combine with the usual operators.
+	perms := guest + {.Write}
+	fmt.println("after +{.Write}: ", .Write in perms)
+
+	perms -= {.Write}
+	fmt.println("after -{.Write}: ", .Write in perms)
+
+	fmt.println("admin =", admin)
+}
+`,
+        },
+      ];
+
+      const playgroundConfig = (code, theme) => ({
+        title: "Odin Playground",
+        description:
+          "Odin, compiled to WebAssembly (wodin) and running in the browser.",
+        mode: "console",
+        activeEditor: "script",
+        theme,
+        autoupdate: false,
+        markup: {
+          language: "html",
+          content:
+            '<p class="note">Odin output is printed to the console.</p>',
+        },
+        style: {
+          language: "css",
+          content:
+            "body{margin:0;display:grid;place-items:center;height:100vh;background:#0d1117;color:#8b98a9;font:14px/1.6 system-ui,sans-serif}",
+        },
+        script: { language: LANGUAGE, title: "Odin", content: code },
+      });
+
+      const elements = {
+        playground: document.getElementById("playground"),
+        samples: document.getElementById("samples"),
+        hint: document.getElementById("hint"),
+        run: document.getElementById("run"),
+        reset: document.getElementById("reset"),
+        share: document.getElementById("share"),
+        open: document.getElementById("open"),
+        theme: document.getElementById("theme"),
+        status: document.getElementById("status"),
+        themeColor: document.querySelector('meta[name="theme-color"]'),
+      };
+
+      let statusTimer;
+
+      const setStatus = (message, kind = "info") => {
+        clearTimeout(statusTimer);
+        elements.status.textContent = message;
+        elements.status.dataset.kind = kind;
+        elements.status.classList.toggle("visible", Boolean(message));
+        if (message && kind !== "error") {
+          statusTimer = setTimeout(
+            () => elements.status.classList.remove("visible"),
+            4000,
+          );
+        }
+      };
+
+      /** The config of a shared link, if the page was opened from one. */
+      const configFromHash = () => {
+        const hash = location.hash.slice(1);
+        if (!hash) return null;
+        try {
+          const json = decompress(hash);
+          return json ? JSON.parse(json) : null;
+        } catch {
+          return null;
+        }
+      };
+
+      const copyToClipboard = async (text) => {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          // clipboard API is unavailable in some contexts; fall back below
+        }
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.top = "-1000px";
+        document.body.append(textarea);
+        textarea.select();
+        let copied = false;
+        try {
+          copied = document.execCommand("copy");
+        } catch {
+          copied = false;
+        }
+        textarea.remove();
+        return copied;
+      };
+
+      const shared = configFromHash();
+
+      const readStoredTheme = () => {
+        try {
+          return localStorage.getItem(THEME_KEY);
+        } catch {
+          return null;
+        }
+      };
+
+      let theme = "light";
+      const applyTheme = (next, { persist = false } = {}) => {
+        theme = next === "dark" ? "dark" : "light";
+        document.body.classList.toggle("dark-mode", theme === "dark");
+        elements.theme.setAttribute("aria-pressed", String(theme === "dark"));
+        elements.themeColor?.setAttribute(
+          "content",
+          theme === "dark" ? "#0d1117" : "#3882d2",
+        );
+        if (persist) {
+          try {
+            localStorage.setItem(THEME_KEY, theme);
+          } catch {
+            // storage may be unavailable (private mode, etc.)
+          }
+        }
+      };
+
+      // Priority: theme from a shared link > saved preference > OS preference.
+      const sharedTheme =
+        shared?.theme === "dark" || shared?.theme === "light"
+          ? shared.theme
+          : null;
+      applyTheme(sharedTheme ?? readStoredTheme() ?? "light");
+
+      SAMPLES.forEach((sample, index) => {
+        elements.samples.add(new Option(sample.label, String(index)));
+      });
+
+      let playground = null;
+
+      /** Reset only applies while an example is selected (not custom code from a link). */
+      const syncControls = () => {
+        elements.reset.disabled = !Number.isInteger(
+          Number(elements.samples.value),
+        );
+      };
+
+      const setHint = (text) => {
+        elements.hint.textContent = text;
+        elements.hint.title = text;
+        elements.samples.title = text;
+      };
+
+      const selectSample = async (index, { run = true } = {}) => {
+        const sample = SAMPLES[index];
+        if (!sample) return;
+        elements.samples.value = String(index);
+        setHint(sample.hint);
+        syncControls();
+        if (!playground) return;
+        setStatus("Compiling…");
+        try {
+          await playground.setConfig({
+            script: {
+              language: LANGUAGE,
+              title: "Odin",
+              content: sample.code,
+            },
+          });
+          if (run) await playground.run();
+          setStatus("");
+        } catch (error) {
+          setStatus(`Run failed: ${error}`, "error");
+        }
+      };
+
+      // point the dropdown at the example that matches the shared code, if any
+      let initialHint = SAMPLES[0].hint;
+      if (shared) {
+        const sharedCode = shared.script?.content ?? "";
+        const sharedIndex = SAMPLES.findIndex(
+          (sample) => sample.code.trim() === sharedCode.trim(),
+        );
+        if (sharedIndex === -1) {
+          elements.samples.add(new Option("Custom code (from link)", "custom"));
+          elements.samples.value = "custom";
+          initialHint = "Code loaded from a shared link.";
+        } else {
+          elements.samples.value = String(sharedIndex);
+          initialHint = SAMPLES[sharedIndex].hint;
+        }
+      }
+      setHint(initialHint);
+      syncControls();
+
+      try {
+        playground = await createPlayground("#playground", {
+          appUrl: APP_URL,
+          loading: "eager",
+          config: shared ?? playgroundConfig(SAMPLES[0].code, theme),
+          params: { theme },
+        });
+      } catch (error) {
+        setStatus(`Could not load the playground: ${error}`, "error");
+      }
+
+      elements.samples.addEventListener("change", () => {
+        selectSample(Number(elements.samples.value));
+      });
+
+      elements.run.addEventListener("click", async () => {
+        if (!playground) return;
+        setStatus("Compiling…");
+        try {
+          await playground.run();
+          setStatus("");
+        } catch (error) {
+          setStatus(`Run failed: ${error}`, "error");
+        }
+      });
+
+      elements.reset.addEventListener("click", () => {
+        const index = Number(elements.samples.value);
+        if (Number.isInteger(index)) selectSample(index);
+      });
+
+      elements.theme.addEventListener("click", async () => {
+        applyTheme(theme === "dark" ? "light" : "dark", { persist: true });
+        if (!playground) return;
+        try {
+          await playground.setConfig({ theme });
+        } catch {
+          // the embed keeps its previous theme; the page still switches
+        }
+      });
+
+      elements.open.addEventListener("click", async () => {
+        if (!playground) return;
+        try {
+          const config = await playground.getConfig();
+          // Let the LiveCodes app use its own theme, display mode and
+          // autoupdate setting rather than carrying ours over.
+          delete config.theme;
+          delete config.mode;
+          delete config.autoupdate;
+          const url = getPlaygroundUrl({ appUrl: APP_URL, config });
+          window.open(url, "_blank", "noopener");
+        } catch (error) {
+          setStatus(`Could not open the playground: ${error}`, "error");
+        }
+      });
+
+      elements.share.addEventListener("click", async () => {
+        if (!playground) return;
+        const shareButton = elements.share;
+        shareButton.disabled = true;
+        try {
+          const config = await playground.getConfig();
+          const url = new URL(location.href);
+          url.hash = compress(JSON.stringify(config));
+          const copied = await copyToClipboard(url.href);
+          if (copied) {
+            setStatus("Shareable link copied to the clipboard ✓");
+          } else {
+            setStatus(
+              "Copying failed — the link is in the address bar",
+              "error",
+            );
+            location.hash = url.hash;
+          }
+        } catch (error) {
+          setStatus(`Could not create the link: ${error}`, "error");
+        } finally {
+          shareButton.disabled = false;
+        }
+      });
+
+      addEventListener("keydown", (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+          event.preventDefault();
+          elements.run.click();
+        }
+      });
+    </script>
+  </body>
+</html>
