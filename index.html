@@ -589,8 +589,10 @@
 
     <footer class="statusbar">
       <span class="note"
-        >Odin runs fully in your browser. The first compile downloads the
-        WebAssembly toolchain, then it is cached.</span
+        >Odin runs fully in your browser via
+        <a href="https://github.com/karl-zylinski/wodin/" target="_blank"
+          >wodin</a
+        >.</span
       >
       <span id="status" role="status" aria-live="polite"></span>
     </footer>
@@ -966,8 +968,7 @@ main :: proc() {
         autoupdate: false,
         markup: {
           language: "html",
-          content:
-            '<p class="note">Odin output is printed to the console.</p>',
+          content: '<p class="note">Odin output is printed to the console.</p>',
         },
         style: {
           language: "css",
